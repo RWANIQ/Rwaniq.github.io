@@ -21,23 +21,30 @@ body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.9 "Geeza Pro","N
 header{position:sticky;top:0;z-index:5;background:#060d20;color:#fff;border-bottom:2px solid var(--gold);padding:calc(env(safe-area-inset-top) + 8px) 14px 8px;display:flex;align-items:center;gap:10px}
 header img{width:46px;height:46px;border-radius:50%}
 header p{flex:1;margin:0;color:var(--gold);font-size:14px;line-height:1.6}
+body:not(.home) header p{font-size:19px;font-weight:700}
 header button,header a{background:none;border:1px solid var(--gold);border-radius:99px;color:var(--gold);font:inherit;font-size:14px;line-height:1.6;padding:2px 14px;text-decoration:none}
 #back,#share{display:none}
-#share{margin-inline-start:auto}
-body.item #back,body.item #share{display:block}
-body.item header img,body.item header p,body.item #sub{display:none}
-#wave{display:block;width:calc(100% - 32px);max-width:608px;height:40px;margin:12px auto 0;fill:var(--gold);opacity:.8}
-body.item #wave,body.item #chips{display:none}
-#chips{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;scrollbar-width:none}
-.chip{flex:none;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:15px;line-height:1.6;padding:2px 16px;border-radius:99px}
-.chip.on{background:var(--btn);border-color:var(--btn);color:#fff}
-main{max-width:640px;margin:0 auto;padding:0 16px calc(env(safe-area-inset-bottom) + 32px)}
+body:not(.home) #back,body.item #share{display:block}
+body:not(.home) #sub{display:none}
+main{max-width:640px;margin:0 auto;padding:6px 16px calc(env(safe-area-inset-bottom) + 32px)}
+.card{position:relative;display:block;overflow:hidden;min-height:190px;margin:14px 0;padding:22px;border-radius:20px;border:1px solid rgba(212,177,96,.5);background:linear-gradient(135deg,#132345,#07112a);color:#ece7da;text-decoration:none}
+.card.m{background:linear-gradient(135deg,#0f5a50,#08142c)}
+.deco{position:absolute;inset:0;width:100%;height:100%}
+.card h2{position:relative;margin:0;color:var(--gold);font-size:34px;line-height:1.5}
+.card p{position:relative;margin:0;font-size:16px;opacity:.85}
+.card b{position:absolute;left:20px;bottom:14px;color:var(--gold);font-size:26px}
+.cat{display:flex;align-items:center;justify-content:space-between;margin:12px 0;padding:20px 22px;border-radius:16px;border:1px solid rgba(212,177,96,.5);background:#0e1b38;color:var(--gold);text-decoration:none;font-size:25px;font-weight:700}
+.cat i{font-style:normal;min-width:36px;height:36px;border-radius:50%;background:rgba(212,177,96,.16);display:grid;place-items:center;font-size:17px;color:#ece7da}
 .row{display:block;padding:14px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
 .row h2{margin:0;font-size:21px;line-height:1.6}
 .row p{margin:2px 0 0;color:var(--mute);font-size:15px;line-height:1.8}
-.tag{color:var(--acc);font-size:14px;font-weight:700}
+.nrow{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+.nrow h2{margin:0;font-size:18px;line-height:1.6}
+.th{position:relative;flex:none;width:132px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#060d20}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th::after{content:"▶";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:22px;background:rgba(6,13,32,.3)}
 small,.mute{color:var(--mute);font-size:14px}
-article h1{margin:14px 0 2px;font-size:27px;line-height:1.6}
+article h1{margin:6px 0 2px;font-size:27px;line-height:1.6}
 .txt{white-space:pre-wrap;font-size:20px;line-height:2.2;margin:20px 0}
 .poem{text-align:center}
 .vid{aspect-ratio:16/9;margin:16px 0 8px;border-radius:10px;overflow:hidden;background:#000}
@@ -50,19 +57,21 @@ article h1{margin:14px 0 2px;font-size:27px;line-height:1.6}
 #skip{left:14px}#snd{right:14px}
 </style>
 </head>
-<body>
-<header><button id="back">رجوع</button><img src="icon-512.png" alt="روانق"><p>رَوْنَقُ الكلمةِ.. وعذوبَةُ النَّغَمِ</p><a id="sub" hidden target="_blank" rel="noopener">اشترك</a><button id="share">مشاركة</button></header>
-<svg id="wave" viewBox="0 0 344 40" aria-hidden="true"></svg>
-<nav id="chips"></nav>
+<body class="home">
+<header><button id="back">رجوع</button><img src="icon-512.png" alt="روانق"><p id="ttl"></p><a id="sub" hidden target="_blank" rel="noopener">اشترك</a><button id="share">مشاركة</button></header>
 <main id="app"></main>
 <div id="intro"><video id="iv" src="intro.mp4" muted autoplay playsinline preload="auto"></video><button id="skip">تخطي</button><button id="snd">تشغيل الصوت</button></div>
 <script>
-const SITE="روانق",K={"النوع":"type","العنوان":"title","التاريخ":"date","الرابط":"url","القناة":"channel"};
-let items=[],cur="";
-const $=s=>document.querySelector(s),app=$("#app"),chips=$("#chips");
+const SITE="روانق",TAG="رَوْنَقُ الكلمةِ.. وعذوبَةُ النَّغَمِ",S={w:"رونق الكلمة",m:"عذب النغم"},PL={"خاطرة":"خواطر","قصيدة":"قصائد","نشيد":"أناشيد","تلاوة":"تلاوات"};
+const K={"النوع":"type","العنوان":"title","التاريخ":"date","الرابط":"url","القناة":"channel"};
+let items=[];
+const $=s=>document.querySelector(s),app=$("#app"),enc=encodeURIComponent;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const yt=u=>((u||"").match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/|live\/)([\w-]{11})/)||[])[1];
-$("#wave").innerHTML=Array.from({length:43},(_,i)=>{const h=3+30*Math.abs(Math.sin(i*.5))*Math.abs(Math.sin(i*.17+1.2));return`<rect x="${i*8+2}" y="${20-h/2}" width="3" height="${h}" rx="1.5"/>`}).join("");
+const sec=i=>i.url?"m":"w",cat=i=>i.type||"أخرى",pl=t=>PL[t]||t,num=n=>n.toLocaleString("ar-EG"),href=i=>"#i/"+enc(i.title);
+const empty='<p class="mute">لا يوجد محتوى بعد.</p>';
+const bars=Array.from({length:45},(_,i)=>{const h=10+80*Math.abs(Math.sin(i*.45))*Math.abs(Math.sin(i*.13+.8));return`<rect x="${i*8}" y="${140-h/2}" width="3.2" height="${h}" rx="1.6"/>`}).join("");
+const deco=k=>k==="w"?`<svg class="deco" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="pt" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M13 1L25 13L13 25L1 13Z" fill="none" stroke="#d4b160" stroke-width=".7"/><circle cx="13" cy="13" r="1.8" fill="#1f7d6f"/></pattern><linearGradient id="gd" x1="0" x2="1"><stop offset="0" stop-color="#d4b160" stop-opacity="0"/><stop offset=".5" stop-color="#d4b160"/><stop offset="1" stop-color="#1f7d6f"/></linearGradient></defs><rect width="360" height="200" fill="url(#pt)" opacity=".22"/><path d="M-10 170C70 110 140 200 230 130S340 70 380 110" fill="none" stroke="url(#gd)" stroke-width="3"/><path d="M-10 185C80 130 150 210 240 148S345 92 380 128" fill="none" stroke="url(#gd)" stroke-width="1.2" opacity=".7"/></svg>`:`<svg class="deco" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="#d4b160" opacity=".4">${bars}</g></svg>`;
 function parse(t){
   return t.split("\n").filter(l=>!l.startsWith("#")).join("\n").split(/^====\s*$/m).map(b=>{
     const m=b.match(/^----\s*$/m),i=m?m.index:b.length,o={body:m?b.slice(i+m[0].length).trim():""};
@@ -73,27 +82,43 @@ function parse(t){
     return o;
   }).filter(o=>o.title||o.channel);
 }
-function list(){
-  const ts=[...new Set(items.map(i=>i.type).filter(Boolean))];
-  chips.innerHTML=["الكل",...ts].map(t=>`<button class="chip${t===(cur||"الكل")?" on":""}" data-t="${esc(t)}">${esc(t)}</button>`).join("");
-  const v=items.filter(i=>!cur||i.type===cur);
-  app.innerHTML=v.length?v.map(i=>`<a class="row" href="#${encodeURIComponent(i.title)}"><span class="tag">${esc(i.type||"")}${yt(i.url)?" ▶":""}</span> <small>${esc(i.date||"")}</small><h2>${esc(i.title)}</h2><p>${esc(i.body.slice(0,110))}${i.body.length>110?"…":""}</p></a>`).join(""):'<p class="mute">لا يوجد محتوى بعد.</p>';
-}
-function show(i){
-  const id=yt(i.url);
-  app.innerHTML=`<article><span class="tag">${esc(i.type||"")}</span> <small>${esc(i.date||"")}</small><h1>${esc(i.title)}</h1>`+
-  (id?`<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1" title="${esc(i.title)}" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div><a class="btn" href="https://youtu.be/${id}" target="_blank" rel="noopener">فتح في يوتيوب</a>`:i.url?`<a class="btn" href="${esc(i.url)}" target="_blank" rel="noopener">فتح الرابط</a>`:"")+
-  `<div class="txt${i.type==="قصيدة"?" poem":""}">${esc(i.body)}</div></article>`;
-}
-function route(){
-  const i=items.find(x=>x.title===decodeURIComponent(location.hash.slice(1)));
-  document.body.classList.toggle("item",!!i);
-  document.title=i?i.title+" | "+SITE:SITE;
-  i?show(i):list();
+function render(cls,title,up,html){
+  document.body.className=cls;
+  $("#ttl").textContent=title;
+  $("#back").onclick=()=>{location.hash=up};
+  document.title=cls==="home"?SITE:title+" | "+SITE;
+  app.innerHTML=html;
   scrollTo(0,0);
 }
-chips.onclick=e=>{const b=e.target.closest("button");if(b){cur=b.dataset.t==="الكل"?"":b.dataset.t;list()}};
-$("#back").onclick=()=>{location.hash=""};
+const typesOf=s=>[...new Set(items.filter(i=>sec(i)===s).map(cat))];
+function home(){
+  render("home",TAG,"",["w","m"].map(s=>`<a class="card ${s}" href="#${s}">${deco(s)}<h2>${S[s]}</h2><p>${esc(typesOf(s).map(pl).join(" · "))}</p><b>←</b></a>`).join(""));
+}
+function section(s){
+  const ts=typesOf(s);
+  render("sub",S[s],"",ts.length?ts.map(t=>`<a class="cat" href="#${s}/${enc(t)}"><span>${esc(pl(t))}</span><i>${num(items.filter(i=>sec(i)===s&&cat(i)===t).length)}</i></a>`).join(""):empty);
+}
+const wrow=i=>`<a class="row" href="${href(i)}"><small>${esc(i.date||"")}</small><h2>${esc(i.title)}</h2><p>${esc(i.body.slice(0,110))}${i.body.length>110?"…":""}</p></a>`;
+const nrow=i=>{const id=yt(i.url);return`<a class="nrow" href="${href(i)}"><span class="th">${id?`<img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy">`:""}</span><span><h2>${esc(i.title)}</h2><small>${esc(i.date||"")}</small></span></a>`};
+function category(s,t){
+  const v=items.filter(i=>sec(i)===s&&cat(i)===t);
+  render("sub",pl(t),s,v.map(s==="m"?nrow:wrow).join("")||empty);
+}
+function item(i){
+  const id=yt(i.url);
+  render("item",pl(cat(i)),sec(i)+"/"+enc(cat(i)),
+   `<article><small>${esc(i.date||"")}</small><h1>${esc(i.title)}</h1>`+
+   (id?`<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1&autoplay=1" title="${esc(i.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><a class="btn" href="https://youtu.be/${id}" target="_blank" rel="noopener">فتح في يوتيوب</a>`:i.url?`<a class="btn" href="${esc(i.url)}" target="_blank" rel="noopener">فتح الرابط</a>`:"")+
+   (i.body?`<div class="txt${i.type==="قصيدة"?" poem":""}">${esc(i.body)}</div>`:"")+`</article>`);
+  document.title=i.title+" | "+SITE;
+}
+function route(){
+  let h="";try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}
+  const j=h.indexOf("/"),a=j<0?h:h.slice(0,j),b=j<0?"":h.slice(j+1);
+  if(a==="i"){const i=items.find(x=>x.title===b);if(i)return item(i)}
+  if(a==="w"||a==="m")return b?category(a,b):section(a);
+  home();
+}
 $("#share").onclick=()=>navigator.share?navigator.share({title:document.title,url:location.href}).catch(()=>{}):navigator.clipboard&&navigator.clipboard.writeText(location.href);
 addEventListener("hashchange",route);
 const intro=$("#intro"),iv=$("#iv");
