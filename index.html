@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>روانق</title>
+<meta name="description" content="رَوْنَقُ الكلمةِ.. وعذوبَةُ النَّغَمِ">
+<meta name="theme-color" content="#060d20">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="روانق">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#eef0eb;--ink:#132345;--mute:#566176;--acc:#17695d;--gold:#d4b160;--line:#d3d7d0;--btn:#1f7d6f}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1530;--ink:#ece7da;--mute:#9aa7bd;--acc:#d4b160;--line:#1f2f52}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.9 "Geeza Pro","Noto Naskh Arabic","Al Nile",serif}
+header{position:sticky;top:0;z-index:5;background:#060d20;color:#fff;border-bottom:2px solid var(--gold);padding:calc(env(safe-area-inset-top) + 8px) 14px 8px;display:flex;align-items:center;gap:10px}
+header img{width:46px;height:46px;border-radius:50%}
+header p{flex:1;margin:0;color:var(--gold);font-size:14px;line-height:1.6}
+header button,header a{background:none;border:1px solid var(--gold);border-radius:99px;color:var(--gold);font:inherit;font-size:14px;line-height:1.6;padding:2px 14px;text-decoration:none}
+#back,#share{display:none}
+#share{margin-inline-start:auto}
+body.item #back,body.item #share{display:block}
+body.item header img,body.item header p,body.item #sub{display:none}
+#wave{display:block;width:calc(100% - 32px);max-width:608px;height:40px;margin:12px auto 0;fill:var(--gold);opacity:.8}
+body.item #wave,body.item #chips{display:none}
+#chips{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:15px;line-height:1.6;padding:2px 16px;border-radius:99px}
+.chip.on{background:var(--btn);border-color:var(--btn);color:#fff}
+main{max-width:640px;margin:0 auto;padding:0 16px calc(env(safe-area-inset-bottom) + 32px)}
+.row{display:block;padding:14px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+.row h2{margin:0;font-size:21px;line-height:1.6}
+.row p{margin:2px 0 0;color:var(--mute);font-size:15px;line-height:1.8}
+.tag{color:var(--acc);font-size:14px;font-weight:700}
+small,.mute{color:var(--mute);font-size:14px}
+article h1{margin:14px 0 2px;font-size:27px;line-height:1.6}
+.txt{white-space:pre-wrap;font-size:20px;line-height:2.2;margin:20px 0}
+.poem{text-align:center}
+.vid{aspect-ratio:16/9;margin:16px 0 8px;border-radius:10px;overflow:hidden;background:#000}
+.vid iframe{width:100%;height:100%;border:0}
+.btn{display:inline-block;margin:4px 0;padding:6px 18px;border-radius:99px;background:var(--btn);color:#fff;text-decoration:none;font-size:15px}
+#intro{position:fixed;inset:0;z-index:20;background:#e4e5e0;display:flex;align-items:center;justify-content:center;transition:opacity .5s}
+#intro.off{opacity:0;pointer-events:none}
+#iv{width:min(100vw,100vh,560px);aspect-ratio:1;-webkit-mask-image:radial-gradient(circle,#000 62%,transparent 71%);mask-image:radial-gradient(circle,#000 62%,transparent 71%)}
+#intro button{position:absolute;top:calc(env(safe-area-inset-top) + 12px);border:0;border-radius:99px;background:#060d20;color:#fff;font:inherit;font-size:14px;line-height:1.6;padding:4px 16px}
+#skip{left:14px}#snd{right:14px}
+</style>
+</head>
+<body>
+<header><button id="back">رجوع</button><img src="icon-512.png" alt="روانق"><p>رَوْنَقُ الكلمةِ.. وعذوبَةُ النَّغَمِ</p><a id="sub" hidden target="_blank" rel="noopener">اشترك</a><button id="share">مشاركة</button></header>
+<svg id="wave" viewBox="0 0 344 40" aria-hidden="true"></svg>
+<nav id="chips"></nav>
+<main id="app"></main>
+<div id="intro"><video id="iv" src="intro.mp4" muted autoplay playsinline preload="auto"></video><button id="skip">تخطي</button><button id="snd">تشغيل الصوت</button></div>
+<script>
+const SITE="روانق",K={"النوع":"type","العنوان":"title","التاريخ":"date","الرابط":"url","القناة":"channel"};
+let items=[],cur="";
+const $=s=>document.querySelector(s),app=$("#app"),chips=$("#chips");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const yt=u=>((u||"").match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/|live\/)([\w-]{11})/)||[])[1];
+$("#wave").innerHTML=Array.from({length:43},(_,i)=>{const h=3+30*Math.abs(Math.sin(i*.5))*Math.abs(Math.sin(i*.17+1.2));return`<rect x="${i*8+2}" y="${20-h/2}" width="3" height="${h}" rx="1.5"/>`}).join("");
+function parse(t){
+  return t.split("\n").filter(l=>!l.startsWith("#")).join("\n").split(/^====\s*$/m).map(b=>{
+    const m=b.match(/^----\s*$/m),i=m?m.index:b.length,o={body:m?b.slice(i+m[0].length).trim():""};
+    b.slice(0,i).split("\n").forEach(l=>{
+      const j=l.indexOf(":"),k=j>0&&K[l.slice(0,j).trim()];
+      if(k)o[k]=l.slice(j+1).trim();
+    });
+    return o;
+  }).filter(o=>o.title||o.channel);
+}
+function list(){
+  const ts=[...new Set(items.map(i=>i.type).filter(Boolean))];
+  chips.innerHTML=["الكل",...ts].map(t=>`<button class="chip${t===(cur||"الكل")?" on":""}" data-t="${esc(t)}">${esc(t)}</button>`).join("");
+  const v=items.filter(i=>!cur||i.type===cur);
+  app.innerHTML=v.length?v.map(i=>`<a class="row" href="#${encodeURIComponent(i.title)}"><span class="tag">${esc(i.type||"")}${yt(i.url)?" ▶":""}</span> <small>${esc(i.date||"")}</small><h2>${esc(i.title)}</h2><p>${esc(i.body.slice(0,110))}${i.body.length>110?"…":""}</p></a>`).join(""):'<p class="mute">لا يوجد محتوى بعد.</p>';
+}
+function show(i){
+  const id=yt(i.url);
+  app.innerHTML=`<article><span class="tag">${esc(i.type||"")}</span> <small>${esc(i.date||"")}</small><h1>${esc(i.title)}</h1>`+
+  (id?`<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1" title="${esc(i.title)}" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div><a class="btn" href="https://youtu.be/${id}" target="_blank" rel="noopener">فتح في يوتيوب</a>`:i.url?`<a class="btn" href="${esc(i.url)}" target="_blank" rel="noopener">فتح الرابط</a>`:"")+
+  `<div class="txt${i.type==="قصيدة"?" poem":""}">${esc(i.body)}</div></article>`;
+}
+function route(){
+  const i=items.find(x=>x.title===decodeURIComponent(location.hash.slice(1)));
+  document.body.classList.toggle("item",!!i);
+  document.title=i?i.title+" | "+SITE:SITE;
+  i?show(i):list();
+  scrollTo(0,0);
+}
+chips.onclick=e=>{const b=e.target.closest("button");if(b){cur=b.dataset.t==="الكل"?"":b.dataset.t;list()}};
+$("#back").onclick=()=>{location.hash=""};
+$("#share").onclick=()=>navigator.share?navigator.share({title:document.title,url:location.href}).catch(()=>{}):navigator.clipboard&&navigator.clipboard.writeText(location.href);
+addEventListener("hashchange",route);
+const intro=$("#intro"),iv=$("#iv");
+let seen=0;try{seen=sessionStorage.getItem("i")}catch(e){}
+function endIntro(){try{sessionStorage.setItem("i","1")}catch(e){}intro.classList.add("off");setTimeout(()=>intro.remove(),600)}
+if(seen||location.hash.length>1)intro.remove();else{
+  iv.onended=iv.onerror=endIntro;$("#skip").onclick=endIntro;
+  $("#snd").onclick=e=>{iv.muted=!iv.muted;e.target.textContent=iv.muted?"تشغيل الصوت":"كتم الصوت"};
+  setTimeout(()=>{if(iv.paused)endIntro()},4000);
+}
+fetch("content.txt",{cache:"no-cache"}).then(r=>r.text()).then(t=>{
+  const all=parse(t.replace(/\r/g,"")),c=all.find(o=>o.channel);
+  items=all.filter(o=>o.title);
+  if(c){const s=$("#sub");s.href=c.channel+(c.channel.includes("?")?"&":"?")+"sub_confirmation=1";s.hidden=false}
+  route();
+}).catch(()=>{app.innerHTML='<p class="mute">تعذّر تحميل المحتوى. تحقق من الاتصال ثم أعد المحاولة.</p>'});
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
